@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ENUMS
+enum Role {
+  admin
+  user
+}
+
+enum AttendanceStatus {
+  hadir
+  izin
+  sakit
+  alfa
+}
+
+enum ItemCondition {
+  baik
+  rusak
+  hilang
+}
+
+model Users {
+  id         String      @id
+  name       String
+  email      String      @unique
+  password   String
+  role       Role
+  position   String
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+
+  // Relasi
+  attendance        Attendance[]
+  inventory_updated Inventory[] @relation("InventoryUpdatedBy")
+  events_created    Events[]    @relation("EventCreatedBy")
+  attendance_recap  AttendanceRecap[]
+}
+
+model Attendance {
+  id         String     @id
+  user_id    String
+  date       DateTime
+  time_in    DateTime?
+  time_out   DateTime?
+  status     AttendanceStatus
+  note       String?
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+
+  // Relasi
+  user Users @relation(fields: [user_id], references: [id])
+}
+
+model Inventory {
+  id          String     @id
+  item_name   String
+  category    String
+  quantity    Int
+  condition   ItemCondition
+  location    String
+  updated_by  String
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+
+  // Relasi
+  updatedBy Users @relation("InventoryUpdatedBy", fields: [updated_by], references: [id])
+}
+
+model Events {
+  id            String     @id
+  title         String
+  description   String
+  location      String
+  start_datetime DateTime
+  end_datetime   DateTime
+  created_by    String
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+
+  // Relasi
+  createdBy Users @relation("EventCreatedBy", fields: [created_by], references: [id])
+}
+
+model AttendanceRecap {
+  id            String   @id
+  user_id       String
+  month         String
+  total_present Int
+  total_absent  Int
+  total_leave   Int
+  total_sick    Int
+  created_at    DateTime @default(now())
+
+  // Relasi
+  user Users @relation(fields: [user_id], references: [id])
+}
