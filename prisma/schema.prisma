@@ -9,8 +9,8 @@ datasource db {
 
 // ENUMS
 enum Role {
-  admin
-  user
+  Admin
+  Personel
 }
 
 enum AttendanceStatus {
