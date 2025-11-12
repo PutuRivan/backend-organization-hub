@@ -59,17 +59,19 @@ model Attendance {
 }
 
 model Inventory {
-  id         String        @id @default(uuid())
-  item_name  String
-  category   String
-  quantity   Int
-  condition  ItemCondition
-  location   String
-  updated_by String
-  created_at DateTime      @default(now())
-  updated_at DateTime      @updatedAt
+  id                   String        @id @default(uuid())
+  item_name            String
+  quantity             Int
+  quantity_description String
+  category             ItemCondition
+  location             String
+  description          String
+  image                String
+  updated_by           String
+  created_at           DateTime      @default(now())
+  updated_at           DateTime      @updatedAt
 
-  // Relasi
+  // Relation to Users (who last updated the inventory item)
   updatedBy Users @relation("InventoryUpdatedBy", fields: [updated_by], references: [id])
 }
 
