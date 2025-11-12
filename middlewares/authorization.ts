@@ -17,7 +17,6 @@ function authorization(roles: string[]) {
     try {
       let token: string | undefined = '';
       let user: any = { role: 'Guest' };
-
       if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
         token = req.headers.authorization.split(' ')[1];
 
