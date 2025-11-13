@@ -6,13 +6,33 @@ import fs from "fs"
 
 export async function getAllInventory(req: Request, res: Response, next: NextFunction) {
   try {
-    const data = await Inventory.getAllInventory()
+    // Ambil query params page dan limit (default: page = 1, limit = 10)
+    const page = parseInt(req.query.page as string) || 1
+    const limit = parseInt(req.query.limit as string) || 10
+    const offset = (page - 1) * limit
 
-    res.status(200).json({ success: true, data: data })
+    // Hitung total data untuk pagination
+    const totalItems = await Inventory.countAll() // Pastikan kamu punya fungsi ini di model Inventory
+    const totalPages = Math.ceil(totalItems / limit)
+
+    // Ambil data sesuai pagination
+    const data = await Inventory.getAllInventory(limit, offset)
+
+    res.status(200).json({
+      success: true,
+      data,
+      pagination: {
+        totalItems,
+        totalPages,
+        currentPage: page,
+        limit,
+      },
+    })
   } catch (error) {
     next(error)
   }
 }
+
 
 export async function getInventoryByID(req: Request, res: Response, next: NextFunction) {
   try {

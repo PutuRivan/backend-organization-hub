@@ -1,11 +1,15 @@
 import { prisma } from "../config/prisma"
 
 class Inventory {
-  getAllInventory() {
+  countAll() {
+    return prisma.inventory.count()
+  }
+
+  getAllInventory(limit: number, offset: number) {
     return prisma.inventory.findMany({
-      include: {
-        updatedBy: true
-      }
+      skip: offset,
+      take: limit,
+      orderBy: { created_at: 'desc' },
     })
   }
 
