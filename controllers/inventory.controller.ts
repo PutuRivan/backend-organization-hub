@@ -127,3 +127,17 @@ export async function updateInventory(req: Request, res: Response, next: NextFun
     next(error);
   }
 }
+
+export async function deleteInventory(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params
+
+    if (!id) throw new CustomError("Parameter id tidak lengkap", 400)
+
+    const data = await Inventory.deleteInventory(id)
+
+    res.status(200).json({ success: true, data })
+  } catch (error) {
+    next(error)
+  }
+}

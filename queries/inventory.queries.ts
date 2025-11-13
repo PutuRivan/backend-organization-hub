@@ -79,7 +79,11 @@ class Inventory {
     })
   }
 
-
+  deleteInventory(id: string) {
+    return prisma.inventory.delete({
+      where: { id },
+    })
+  }
 }
 
 export default new Inventory()
