@@ -84,7 +84,7 @@ export async function updateInventory(req: Request, res: Response, next: NextFun
       imagePath = `/uploads/inventory/${req.file.filename}`;
 
       // Hapus file lama dari server (jika ada)
-      const oldImagePath = path.join(__dirname, "../../public", existingInventory.image);
+      const oldImagePath = path.join(process.cwd(), existingInventory.image.replace(/^\//, ""));
       if (fs.existsSync(oldImagePath)) {
         fs.unlinkSync(oldImagePath);
       }

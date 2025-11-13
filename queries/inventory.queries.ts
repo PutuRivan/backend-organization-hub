@@ -1,6 +1,4 @@
-import path from "path"
 import { prisma } from "../config/prisma"
-import fs from "fs"
 
 class Inventory {
   getAllInventory() {
