@@ -43,6 +43,41 @@ class Inventory {
     })
   }
 
+  async updateInventory(
+    id: string,
+    data: {
+      name?: string
+      quantity?: number
+      quantity_description?: string
+      category?: string
+      location?: string
+      description?: string
+      image?: string
+      userId?: string
+    }
+  ) {
+    // Bentuk objek sementara untuk update
+    const updateData: any = {}
+
+    if (data.name !== undefined) updateData.item_name = data.name
+    if (data.quantity !== undefined) updateData.quantity = data.quantity
+    if (data.quantity_description !== undefined) updateData.quantity_description = data.quantity_description
+    if (data.category !== undefined) updateData.category = data.category as any
+    if (data.location !== undefined) updateData.location = data.location
+    if (data.description !== undefined) updateData.description = data.description
+    if (data.image !== undefined) updateData.image = data.image
+    if (data.userId !== undefined) updateData.updated_by = data.userId
+
+    if (data.userId && data.userId.trim() !== "") {
+      updateData.updated_by = data.userId;
+    }
+    return prisma.inventory.update({
+      where: { id },
+      data: updateData,
+    })
+  }
+
+
 }
 
 export default new Inventory()

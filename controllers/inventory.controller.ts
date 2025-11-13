@@ -64,3 +64,46 @@ export async function createInventory(req: Request, res: Response, next: NextFun
     next(error);
   }
 }
+
+export async function updateInventory(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const { name, quantity, quantity_description, category, location, description, userId } = req.body;
+
+    if (!id) throw new CustomError("Parameter id tidak lengkap", 400);
+
+    // Ambil data lama untuk validasi dan hapus file lama jika ada file baru
+    const existingInventory = await Inventory.getInventoryByID(id);
+    if (!existingInventory) throw new CustomError("Data inventory tidak ditemukan", 404);
+
+    let imagePath = existingInventory.image;
+
+    // Jika ada file baru diupload, ganti gambar lama
+    if (req.file) {
+      // Path baru
+      imagePath = `/uploads/inventory/${req.file.filename}`;
+
+      // Hapus file lama dari server (jika ada)
+      const oldImagePath = path.join(__dirname, "../../public", existingInventory.image);
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    }
+
+    // Update data ke database
+    const updatedData = await Inventory.updateInventory(id, {
+      name: name ?? existingInventory.item_name,
+      quantity: quantity ? Number(quantity) : existingInventory.quantity,
+      quantity_description: quantity_description ?? existingInventory.quantity_description,
+      category: category ?? existingInventory.category,
+      location: location ?? existingInventory.location,
+      description: description ?? existingInventory.description,
+      image: imagePath,
+      userId: userId ?? existingInventory.id,
+    });
+
+    res.status(200).json({ success: true, data: updatedData });
+  } catch (error) {
+    next(error);
+  }
+}
