@@ -26,7 +26,7 @@ export async function Login(req: Request, res: Response, next: NextFunction) {
     }
 
     return res
-      .cookie('token', token, { signed: true })
+      .cookie('access_token', token, { signed: true })
       .status(200)
       .json({
         success: true,
@@ -37,3 +37,23 @@ export async function Login(req: Request, res: Response, next: NextFunction) {
     next(error)
   }
 }
+
+export const checkToken = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    let token = req.signedCookies['access_token'];
+    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+      token = req.headers.authorization.split(' ')[1];
+    }
+    if (token == undefined) {
+      res.status(500).json({ token: 'undefined' });
+    } else {
+      const signature = jwt.verify(token, process.env.JWT_SECRET!);
+      res.status(200).json({ dataToken: signature });
+    }
+    next();
+  } catch (error) {
+    res.status(403).json({
+      message: 'Unauthorized',
+    });
+  }
+};
