@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { Inventory } from "../queries";
 import CustomError from "../handler/CustomError";
-import path from "path";
-import fs from "fs"
+import { deleteImageFromCloudinary } from "../services/upload";
 
 export async function getAllInventory(req: Request, res: Response, next: NextFunction) {
   try {
@@ -65,8 +64,8 @@ export async function createInventory(req: Request, res: Response, next: NextFun
       throw new CustomError("File gambar wajib diunggah", 400);
     }
 
-    // Dapatkan path file relatif agar bisa diakses frontend
-    const imagePath = `/uploads/inventory/${file.filename}`;
+    // Dapatkan URL dari Cloudinary (req.file.path berisi secure URL dari Cloudinary)
+    const imageUrl = (file as any).path || (file as any).secure_url;
 
     const data = await Inventory.createInventory({
       name,
@@ -75,7 +74,7 @@ export async function createInventory(req: Request, res: Response, next: NextFun
       category,
       location,
       description,
-      image: imagePath,
+      image: imageUrl,
       userId,
     });
 
@@ -96,17 +95,16 @@ export async function updateInventory(req: Request, res: Response, next: NextFun
     const existingInventory = await Inventory.getInventoryByID(id);
     if (!existingInventory) throw new CustomError("Data inventory tidak ditemukan", 404);
 
-    let imagePath = existingInventory.image;
+    let imageUrl = existingInventory.image;
 
     // Jika ada file baru diupload, ganti gambar lama
     if (req.file) {
-      // Path baru
-      imagePath = `/uploads/inventory/${req.file.filename}`;
+      // Dapatkan URL baru dari Cloudinary
+      imageUrl = (req.file as any).path || (req.file as any).secure_url;
 
-      // Hapus file lama dari server (jika ada)
-      const oldImagePath = path.join(process.cwd(), existingInventory.image.replace(/^\//, ""));
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
+      // Hapus file lama dari Cloudinary (jika ada)
+      if (existingInventory.image) {
+        await deleteImageFromCloudinary(existingInventory.image);
       }
     }
 
@@ -118,7 +116,7 @@ export async function updateInventory(req: Request, res: Response, next: NextFun
       category: category ?? existingInventory.category,
       location: location ?? existingInventory.location,
       description: description ?? existingInventory.description,
-      image: imagePath,
+      image: imageUrl,
       userId: userId ?? existingInventory.id,
     });
 
@@ -133,6 +131,13 @@ export async function deleteInventory(req: Request, res: Response, next: NextFun
     const { id } = req.params
 
     if (!id) throw new CustomError("Parameter id tidak lengkap", 400)
+
+    // Ambil data inventory untuk mendapatkan URL gambar
+    const existingInventory = await Inventory.getInventoryByID(id);
+    if (existingInventory && existingInventory.image) {
+      // Hapus gambar dari Cloudinary
+      await deleteImageFromCloudinary(existingInventory.image);
+    }
 
     const data = await Inventory.deleteInventory(id)
 
