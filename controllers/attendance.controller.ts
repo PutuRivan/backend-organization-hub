@@ -13,6 +13,39 @@ export async function getAllAttendance(req: Request, res: Response, next: NextFu
   }
 }
 
+export async function getTodayAttendance(req: Request, res: Response, next: NextFunction) {
+  try {
+    const authenticatedUserId = req.user?.id
+
+    if (!authenticatedUserId) {
+      throw new CustomError("User tidak ditemukan pada token", 401)
+    }
+
+    const now = new Date()
+    const dayStart = new Date(now)
+    dayStart.setHours(0, 0, 0, 0)
+    const dayEnd = new Date(now)
+    dayEnd.setHours(23, 59, 59, 999)
+
+    const todayAttendance = await Attendance.getAttendanceByUserAndDate(authenticatedUserId, dayStart, dayEnd)
+
+    if (!todayAttendance) {
+      return res.status(404).json({
+        success: false,
+        message: "Absensi hari ini tidak ditemukan",
+        data: null
+      })
+    }
+
+    res.status(200).json({
+      success: true,
+      data: todayAttendance
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export async function createAttendance(req: Request, res: Response, next: NextFunction) {
   try {
     const authenticatedUserId = req.user?.id
