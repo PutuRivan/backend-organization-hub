@@ -47,6 +47,51 @@ class Attendance {
       }
     })
   }
+
+  getAttendanceByPersonel(
+    startDate?: Date,
+    name?: string,
+    page: number = 1,
+    limit: number = 10
+  ) {
+    const where: any = {
+      user: {
+        role: "Personel",
+      },
+    };
+
+    if (name) {
+      where.user = {
+        ...where.user,
+        name: {
+          contains: name,
+          mode: "insensitive",
+        },
+      };
+    }
+
+    if (startDate) {
+      where.date = {};
+      if (startDate) where.date.gte = startDate;
+    }
+
+    const skip = (page - 1) * limit;
+
+    const countPromise = prisma.attendance.count({ where });
+
+    const dataPromise = prisma.attendance.findMany({
+      where,
+      include: { user: true },
+      orderBy: { date: "desc" },
+      skip,
+      take: limit,
+    });
+
+    return Promise.all([countPromise, dataPromise]).then(([totalData, data]) => ({
+      totalData,
+      data,
+    }));
+  }
 }
 
 export default new Attendance()

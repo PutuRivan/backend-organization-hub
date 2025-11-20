@@ -109,3 +109,46 @@ export async function createAttendance(req: Request, res: Response, next: NextFu
     next(error)
   }
 }
+
+export async function getPersonelAttendance(req: Request, res: Response, next: NextFunction) {
+  try {
+    console.log("REQ.QUERY:", req.query);
+    const { startDate, name, page = 1, limit = 5 } = req.query;
+    console.log({ startDate, name, page, limit })
+    let parsedStartDate: Date | undefined = undefined;
+
+    if (startDate) {
+      parsedStartDate = new Date(startDate as string);
+      if (isNaN(parsedStartDate.getTime())) {
+        throw new CustomError("Format tanggal mulai tidak valid", 400);
+      }
+      parsedStartDate.setHours(0, 0, 0, 0);
+    }
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    // Ambil data attendance
+    const { data, totalData } = await Attendance.getAttendanceByPersonel(
+      parsedStartDate,
+      name as string | undefined,
+      pageNumber,
+      limitNumber
+    );
+
+    const totalPages = Math.ceil(totalData / limitNumber);
+
+    res.status(200).json({
+      success: true,
+      pagination: {
+        currentPage: pageNumber,
+        limit: limitNumber,
+        totalData,
+        totalPages,
+      },
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
