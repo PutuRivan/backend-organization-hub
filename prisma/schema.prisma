@@ -30,9 +30,12 @@ model Users {
   id         String   @id @default(uuid())
   name       String
   email      String   @unique
+  nrp        String   @unique
+  image     String?
+  jabatan    String
   password   String
   role       Role
-  position   String
+  pangkat   String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
