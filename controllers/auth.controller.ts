@@ -22,7 +22,12 @@ export async function Login(req: Request, res: Response, next: NextFunction) {
       id: dataUser.id,
       name: dataUser.name,
       email: dataUser.email,
-      role: dataUser.role
+      role: dataUser.role,
+      pangkat: dataUser.pangkat,
+      jabatan: dataUser.jabatan,
+      image: dataUser.image,
+      nrp: dataUser.nrp,
+      status: dataUser.status,
     }
 
     return res

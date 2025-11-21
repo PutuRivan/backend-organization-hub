@@ -16,7 +16,7 @@ class Events {
             id: true,
             name: true,
             email: true,
-            position: true,
+            jabatan: true,
           }
         }
       }
@@ -34,7 +34,7 @@ class Events {
             id: true,
             name: true,
             email: true,
-            position: true,
+            jabatan: true,
           }
         }
       }
@@ -64,7 +64,7 @@ class Events {
             id: true,
             name: true,
             email: true,
-            position: true,
+            jabatan: true,
           }
         }
       }
@@ -98,7 +98,7 @@ class Events {
             id: true,
             name: true,
             email: true,
-            position: true,
+            jabatan: true,
           }
         }
       }
@@ -129,7 +129,6 @@ class Events {
             id: true,
             name: true,
             email: true,
-            position: true,
           }
         }
       }

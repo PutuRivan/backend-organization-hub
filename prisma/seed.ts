@@ -22,6 +22,7 @@ async function main() {
       pangkat: "Letnan Satu",
       role: "Admin",
       image: null, // opsional
+      status: "Aktif",
     },
   });
 

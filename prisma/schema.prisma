@@ -26,6 +26,11 @@ enum ItemCondition {
   Hilang
 }
 
+enum UserStatus {
+  Aktif
+  Tidak_Aktif
+}
+
 model Users {
   id         String   @id @default(uuid())
   name       String
@@ -34,6 +39,7 @@ model Users {
   image     String?
   jabatan    String
   password   String
+  status     UserStatus
   role       Role
   pangkat   String
   created_at DateTime @default(now())
