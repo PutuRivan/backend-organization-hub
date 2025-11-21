@@ -92,6 +92,46 @@ class Attendance {
       data,
     }));
   }
+
+  async getAttendanceStats(startDate?: Date, endDate?: Date) {
+    const where: any = {};
+
+    if (startDate || endDate) {
+      where.date = {};
+      if (startDate) where.date.gte = startDate;
+      if (endDate) where.date.lte = endDate;
+    }
+
+    const total = await prisma.attendance.count({ where });
+
+    const hadir = await prisma.attendance.count({
+      where: { ...where, status: "Hadir" }
+    });
+
+    const izin = await prisma.attendance.count({
+      where: { ...where, status: "Izin" }
+    });
+
+    const sakit = await prisma.attendance.count({
+      where: { ...where, status: "Sakit" }
+    });
+
+    const alfa = await prisma.attendance.count({
+      where: { ...where, status: "Alfa" }
+    });
+
+    return {
+      total,
+      hadir,
+      izin,
+      sakit,
+      alfa,
+      hadirPercentage: total > 0 ? Math.round((hadir / total) * 100) : 0,
+      izinPercentage: total > 0 ? Math.round((izin / total) * 100) : 0,
+      sakitPercentage: total > 0 ? Math.round((sakit / total) * 100) : 0,
+      alfaPercentage: total > 0 ? Math.round((alfa / total) * 100) : 0,
+    };
+  }
 }
 
 export default new Attendance()

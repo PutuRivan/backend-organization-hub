@@ -84,6 +84,39 @@ class Inventory {
       where: { id },
     })
   }
+
+  async getInventorySummary() {
+    const total = await prisma.inventory.count();
+
+    const baik = await prisma.inventory.count({
+      where: { category: "Baik" }
+    });
+
+    const rusak = await prisma.inventory.count({
+      where: { category: "Rusak" }
+    });
+
+    const hilang = await prisma.inventory.count({
+      where: { category: "Hilang" }
+    });
+
+    const totalQuantity = await prisma.inventory.aggregate({
+      _sum: {
+        quantity: true
+      }
+    });
+
+    return {
+      totalItems: total,
+      totalQuantity: totalQuantity._sum.quantity || 0,
+      baik,
+      rusak,
+      hilang,
+      baikPercentage: total > 0 ? Math.round((baik / total) * 100) : 0,
+      rusakPercentage: total > 0 ? Math.round((rusak / total) * 100) : 0,
+      hilangPercentage: total > 0 ? Math.round((hilang / total) * 100) : 0,
+    };
+  }
 }
 
 export default new Inventory()
