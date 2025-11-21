@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { User } from "../queries";
+import bcrypt from 'bcrypt'
 
 export async function getAllUser(req: Request, res: Response, next: NextFunction) {
   try {
@@ -50,5 +51,54 @@ export async function getAllPersonel(req: Request, res: Response, next: NextFunc
     })
   } catch (error) {
     next(error)
+  }
+}
+
+export async function createUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { name, email, nrp, jabatan, password, role, status, pangkat, image } = req.body;
+
+    // **Validation Required Fields**
+    if (!name || !email || !nrp || !jabatan || !password || !role || !status || !pangkat) {
+      return res.status(400).json({
+        success: false,
+        message: "Semua field wajib diisi.",
+      });
+    }
+
+    // **Check Unique Email**
+    const existingEmail = await User.getUserByEmail(email)
+
+
+    // **Check Unique NRP**
+    const existingNRP = await User.getUserByNRP(nrp)
+
+    // **Hash Password**
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const data = {
+      name: name,
+      email: email,
+      nrp: nrp,
+      image: image ?? null,
+      jabatan: jabatan,
+      password: password,
+      status: status,
+      role: role,
+      pangkat: pangkat,
+
+    }
+
+    // **Create User**
+    const newUser = await User.createUser(data)
+
+    return res.status(201).json({
+      success: true,
+      message: "User berhasil dibuat.",
+      data: newUser,
+    });
+
+  } catch (error) {
+    next(error);
   }
 }

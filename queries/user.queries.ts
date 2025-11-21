@@ -1,3 +1,4 @@
+import { Role, UserStatus } from "@prisma/client"
 import { prisma } from "../config/prisma"
 
 class User {
@@ -51,6 +52,33 @@ class User {
       include: {
         attendance: true,
       }
+    })
+  }
+
+  getUserByNRP(nrp: string) {
+    return prisma.users.findUnique({
+      where: {
+        nrp: nrp
+      },
+      include: {
+        attendance: true
+      }
+    })
+  }
+
+  createUser(data: {
+    name: string,
+    email: string,
+    nrp: string
+    image?: string
+    jabatan: string
+    password: string
+    status: UserStatus
+    role: Role
+    pangkat: string
+  }) {
+    return prisma.users.create({
+      data
     })
   }
 }
