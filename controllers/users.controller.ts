@@ -56,8 +56,8 @@ export async function getAllPersonel(req: Request, res: Response, next: NextFunc
 
 export async function createUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const { name, email, nrp, jabatan, password, role, status, pangkat, image } = req.body;
-
+    const { name, email, nrp, jabatan, password, role, status, pangkat } = req.body;
+    const image = req.file
     // **Validation Required Fields**
     if (!name || !email || !nrp || !jabatan || !password || !role || !status || !pangkat) {
       return res.status(400).json({
@@ -65,6 +65,8 @@ export async function createUser(req: Request, res: Response, next: NextFunction
         message: "Semua field wajib diisi.",
       });
     }
+
+    const imageUrl = (image as any).path || (image as any).secure_url;
 
     // **Check Unique Email**
     const existingEmail = await User.getUserByEmail(email)
@@ -80,13 +82,12 @@ export async function createUser(req: Request, res: Response, next: NextFunction
       name: name,
       email: email,
       nrp: nrp,
-      image: image ?? null,
+      image: imageUrl ?? null,
       jabatan: jabatan,
       password: password,
       status: status,
       role: role,
       pangkat: pangkat,
-
     }
 
     // **Create User**

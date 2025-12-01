@@ -32,18 +32,18 @@ enum UserStatus {
 }
 
 model Users {
-  id         String   @id @default(uuid())
+  id         String     @id @default(uuid())
   name       String
-  email      String   @unique
-  nrp        String   @unique
-  image     String?
+  email      String     @unique
+  nrp        String     @unique
+  image      String?
   jabatan    String
   password   String
   status     UserStatus
   role       Role
-  pangkat   String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  pangkat    String
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
 
   // Relasi
   attendance        Attendance[]
@@ -86,9 +86,11 @@ model Inventory {
 
 model Events {
   id             String   @id @default(uuid())
-  title          String
-  description    String
-  location       String
+  name           String
+  place          String
+  leader         String?
+  category       String?
+  dress_code     String?
   start_datetime DateTime
   end_datetime   DateTime
   created_by     String

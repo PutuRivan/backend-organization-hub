@@ -18,16 +18,17 @@ function authorization(roles: string[]) {
       let user: any = { role: 'Guest' };
       if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
         token = req.headers.authorization.split(' ')[1];
-
+        console.log({ token })
         if (token !== null && token !== undefined && token !== '') {
           user = jwt.verify(token, process.env.JWT_SECRET!);
           req.user = user;
+          console.log({ user })
         } else {
           user = { role: 'Guest' };
         }
 
       }
-
+      console.log({ role: user.role })
       if (!roles.includes(user.role)) {
         throw new Error('You are not authorized with this token');
       }
