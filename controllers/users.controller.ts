@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { User } from "../queries";
 import bcrypt from 'bcrypt'
+import { deleteImageFromCloudinary } from "../services/upload";
 
 export async function getAllUser(req: Request, res: Response, next: NextFunction) {
   try {
@@ -54,6 +55,25 @@ export async function getAllPersonel(req: Request, res: Response, next: NextFunc
   }
 }
 
+export async function getUserById(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "ID wajib diisi.",
+      });
+    }
+    const data = await User.getUserById(id)
+    res.status(200).json({
+      success: true,
+      data
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export async function createUser(req: Request, res: Response, next: NextFunction) {
   try {
     const { name, email, nrp, jabatan, password, role, status, pangkat } = req.body;
@@ -101,5 +121,37 @@ export async function createUser(req: Request, res: Response, next: NextFunction
 
   } catch (error) {
     next(error);
+  }
+}
+
+export async function deleteUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "ID wajib diisi.",
+      });
+    }
+
+    const existingUser = await User.getUserById(id)
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User tidak ditemukan.",
+      });
+    }
+
+    if (existingUser.image) {
+      await deleteImageFromCloudinary(existingUser.image)
+    }
+
+    const data = await User.deleteUser(id)
+    res.status(200).json({
+      success: true,
+      data
+    })
+  } catch (error) {
+    next(error)
   }
 }

@@ -14,13 +14,27 @@ async function main() {
 
   await prisma.users.create({
     data: {
-      name: "Admin User",
+      name: "Admin",
       email: "admin@example.com",
       nrp: "000001",
       password: hashedPassword,
       jabatan: "Admin Utama",
       pangkat: "Letnan Satu",
       role: "Admin",
+      image: null, // opsional
+      status: "Aktif",
+    },
+  });
+
+  await prisma.users.create({
+    data: {
+      name: "User",
+      email: "user@example.com",
+      nrp: "000002",
+      password: hashedPassword,
+      jabatan: "Personel",
+      pangkat: "Bripda",
+      role: "Personel",
       image: null, // opsional
       status: "Aktif",
     },

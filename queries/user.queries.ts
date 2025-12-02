@@ -81,6 +81,14 @@ class User {
       data
     })
   }
+
+  deleteUser(id: string) {
+    return prisma.users.delete({
+      where: {
+        id: id
+      }
+    })
+  }
 }
 
 export default new User()
