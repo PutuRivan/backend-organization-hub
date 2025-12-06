@@ -114,3 +114,12 @@ model AttendanceRecap {
   // Relasi
   user Users @relation(fields: [user_id], references: [id])
 }
+
+model Archive {
+  id           String    @id @default(uuid())
+  original_id  String    // ID asli sebelum dihapus
+  table_name   String    // nama tabel asal: "Users", "Attendance", dll
+  data         Json      // isi data full sebelum dihapus
+  deleted_by   String?   // user yang menghapus (optional)
+  deleted_at   DateTime  @default(now())
+}

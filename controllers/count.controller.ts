@@ -18,7 +18,7 @@ export async function getDashboardData(req: Request, res: Response, next: NextFu
     const inventorySummary = await Inventory.getInventorySummary();
 
     // Get total counts
-    const totalUsers = await User.countAll();
+    const totalPersonel = await User.countPersonel();
     const totalEvents = await Events.countAll();
 
     const data = {
@@ -33,7 +33,7 @@ export async function getDashboardData(req: Request, res: Response, next: NextFu
       upcomingEvents: upcomingEvents,
       inventory: inventorySummary,
       summary: {
-        totalUsers,
+        totalPersonel,
         totalEvents,
         totalInventoryItems: inventorySummary.totalItems,
         totalInventoryQuantity: inventorySummary.totalQuantity

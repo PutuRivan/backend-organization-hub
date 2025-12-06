@@ -7,6 +7,14 @@ class User {
     return prisma.users.count()
   }
 
+  countPersonel() {
+    return prisma.users.count({
+      where: {
+        role: "Personel"
+      }
+    })
+  }
+
   getAllUser(limit: number, offset: number) {
     return prisma.users.findMany({
       skip: offset,
