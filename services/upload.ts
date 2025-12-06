@@ -18,29 +18,42 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Konfigurasi storage untuk Cloudinary
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: async (req, file) => {
-    return {
-      folder: "inventory",
-      allowed_formats: ["jpg", "jpeg", "png"],
-      transformation: [{ width: 1000, height: 1000, crop: "limit" }],
-    };
-  },
-});
+// Fungsi untuk membuat storage dengan folder yang dinamis
+const createStorage = (folder: string) => {
+  return new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+      return {
+        folder: folder,
+        allowed_formats: ["jpg", "jpeg", "png", "pdf", "doc", "docx"], // Menambahkan format file dokumen
+        transformation: [{ width: 1000, height: 1000, crop: "limit" }],
+      };
+    },
+  });
+};
 
-export const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) => {
-    const allowed = ["image/png", "image/jpeg", "image/jpg"];
-    if (!allowed.includes(file.mimetype)) {
-      return cb(new Error("Only PNG or JPG images are allowed"));
-    }
-    cb(null, true);
-  },
-});
+// Fungsi untuk membuat upload instance dengan folder yang dinamis
+export const createUpload = (folder: string = "uploads") => {
+  const storage = createStorage(folder);
+
+  return multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+      const allowedImages = ["image/png", "image/jpeg", "image/jpg"];
+      const allowedDocs = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+      const allowed = [...allowedImages, ...allowedDocs];
+
+      if (!allowed.includes(file.mimetype)) {
+        return cb(new Error("Only PNG, JPG, PDF, DOC, or DOCX files are allowed"));
+      }
+      cb(null, true);
+    },
+  });
+};
+
+// Default upload instance untuk backward compatibility (menggunakan folder "inventory")
+export const upload = createUpload("inventory");
 
 // Export cloudinary instance untuk digunakan di controller
 export { cloudinary };
