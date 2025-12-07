@@ -54,7 +54,7 @@ export async function createInventory(req: Request, res: Response, next: NextFun
     const { name, quantity, quantity_description, category, location, description, userId } = req.body;
 
     // Cek parameter wajib selain file
-    if (!name || !quantity || !quantity_description || !category || !location || !description || !userId) {
+    if (!name || !quantity || !quantity_description || !category || !location || !userId) {
       throw new CustomError("Parameter tidak lengkap", 400);
     }
 

@@ -74,7 +74,7 @@ model Inventory {
   quantity_description String
   category             ItemCondition
   location             String
-  description          String
+  description          String?
   image                String
   updated_by           String
   created_at           DateTime      @default(now())

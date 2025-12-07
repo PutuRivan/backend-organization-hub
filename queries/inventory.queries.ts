@@ -27,7 +27,7 @@ class Inventory {
     quantity_description: string
     category: string
     location: string
-    description: string
+    description: string | null
     image: string
     userId: string
   }) {
@@ -38,7 +38,7 @@ class Inventory {
         quantity_description: data.quantity_description,
         category: data.category as any,
         location: data.location,
-        description: data.description,
+        description: data.description as any,
         image: data.image,
         updated_by: data.userId,
       },
