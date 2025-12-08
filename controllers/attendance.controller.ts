@@ -110,33 +110,52 @@ export async function createAttendance(req: Request, res: Response, next: NextFu
   }
 }
 
-export async function getPersonelAttendance(req: Request, res: Response, next: NextFunction) {
+export async function getPersonelAttendance(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
-    console.log("REQ.QUERY:", req.query);
-    const { startDate, name, page = 1, limit = 5 } = req.query;
-    console.log({ startDate, name, page, limit })
-    let parsedStartDate: Date | undefined = undefined;
+    const { status, date, name, page = 1, limit = 5 } = req.query;
 
-    if (startDate) {
-      parsedStartDate = new Date(startDate as string);
-      if (isNaN(parsedStartDate.getTime())) {
-        throw new CustomError("Format tanggal mulai tidak valid", 400);
+    let parsedDate: Date | undefined;
+
+    if (date) {
+      const dateParts = (date as string).split("-").map(Number);
+
+      if (dateParts.length !== 3) {
+        throw new CustomError("Format tanggal tidak valid. Gunakan format YYYY-MM-DD", 400);
       }
-      parsedStartDate.setHours(0, 0, 0, 0);
+
+      const [y, m, d] = dateParts;
+
+      // Type guard to ensure all parts are defined
+      if (y === undefined || m === undefined || d === undefined) {
+        throw new CustomError("Format tanggal tidak valid. Gunakan format YYYY-MM-DD", 400);
+      }
+
+      parsedDate = new Date(y, m - 1, d);
+      parsedDate.setHours(0, 0, 0, 0);
     }
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
 
-    // Ambil data attendance
-    const { data, totalData } = await Attendance.getAttendanceByPersonel(
-      parsedStartDate,
-      name as string | undefined,
-      pageNumber,
-      limitNumber
-    );
+    if (
+      status &&
+      !Object.values(AttendanceStatus).includes(status as AttendanceStatus)
+    ) {
+      throw new CustomError("Status absensi tidak valid", 400);
+    }
 
-    const totalPages = Math.ceil(totalData / limitNumber);
+    const { data, totalData } =
+      await Attendance.getAttendanceByPersonel(
+        parsedDate, // ✅ FIXED
+        name as string | undefined,
+        pageNumber,
+        limitNumber,
+        status as AttendanceStatus | undefined
+      );
 
     res.status(200).json({
       success: true,
@@ -144,7 +163,7 @@ export async function getPersonelAttendance(req: Request, res: Response, next: N
         currentPage: pageNumber,
         limit: limitNumber,
         totalData,
-        totalPages,
+        totalPages: Math.ceil(totalData / limitNumber),
       },
       data,
     });

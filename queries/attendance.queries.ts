@@ -49,16 +49,21 @@ class Attendance {
   }
 
   getAttendanceByPersonel(
-    startDate?: Date,
+    date?: Date,
     name?: string,
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
+    status?: AttendanceStatus
   ) {
     const where: any = {
       user: {
         role: "Personel",
       },
     };
+
+    if (status) {
+      where.status = status;
+    }
 
     if (name) {
       where.user = {
@@ -70,9 +75,14 @@ class Attendance {
       };
     }
 
-    if (startDate) {
-      where.date = {};
-      if (startDate) where.date.gte = startDate;
+    if (date) {
+      const nextDay = new Date(date);
+      nextDay.setDate(date.getDate() + 1);
+
+      where.date = {
+        gte: date,
+        lt: nextDay, // ✅ PENTING
+      };
     }
 
     const skip = (page - 1) * limit;
