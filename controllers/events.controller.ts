@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { Events } from "../queries";
+import { Events, Archive } from "../queries";
 import CustomError from "../handler/CustomError";
 
 export async function getAllEvents(req: Request, res: Response, next: NextFunction) {
@@ -148,6 +148,12 @@ export async function deleteEvent(req: Request, res: Response, next: NextFunctio
     const existingEvent = await Events.getEventByID(id);
     if (!existingEvent) throw new CustomError("Data event tidak ditemukan", 404);
 
+    // Archive the event
+    const archivedEvent = await Archive.archiveEvent(existingEvent, req.user.id)
+
+    if (!archivedEvent) throw new CustomError("Gagal mengarsipkan event", 500)
+      
+    // Delete the event
     const data = await Events.deleteEvent(id)
 
     res.status(200).json({ success: true, data })

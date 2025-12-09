@@ -43,6 +43,15 @@ class Archive {
       deleted_by: deletedBy,
     })
   }
+
+  async archiveEvent(event: any, deletedBy: string) {
+    return this.create({
+      original_id: event.id,
+      table_name: "Events",
+      data: event,
+      deleted_by: deletedBy,
+    })
+  }
 }
 
 export default new Archive()
