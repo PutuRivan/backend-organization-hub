@@ -142,6 +142,12 @@ class Attendance {
       alfaPercentage: total > 0 ? Math.round((alfa / total) * 100) : 0,
     };
   }
+
+  deleteByUserId(userId: string) {
+    return prisma.attendance.deleteMany({
+      where: { user_id: userId }
+    })
+  }
 }
 
 export default new Attendance()

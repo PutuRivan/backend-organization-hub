@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { User } from "../queries";
+import { User, Attendance, AttendanceRecap, Archive } from "../queries";
 import bcrypt from 'bcrypt'
 import { deleteImageFromCloudinary } from "../services/upload";
 
@@ -145,6 +145,39 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
     if (existingUser.image) {
       await deleteImageFromCloudinary(existingUser.image)
     }
+
+    // Archive and Delete Attendance
+    if (existingUser.attendance && existingUser.attendance.length > 0) {
+      await Archive.createMany(existingUser.attendance.map((a: any) => ({
+        original_id: a.id,
+        table_name: "Attendance",
+        data: a,
+        deleted_by: "System",
+      })))
+      await Attendance.deleteByUserId(id)
+    }
+
+    // Archive and Delete AttendanceRecap
+    const recaps = await AttendanceRecap.getByUserId(id)
+    if (recaps && recaps.length > 0) {
+      await Archive.createMany(recaps.map((r: any) => ({
+        original_id: r.id,
+        table_name: "AttendanceRecap",
+        data: r,
+        deleted_by: "System",
+      })))
+      await AttendanceRecap.deleteByUserId(id)
+    }
+
+    // Archive User
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { attendance, ...userData } = existingUser
+    await Archive.create({
+      original_id: userData.id,
+      table_name: "Users",
+      data: userData as any,
+      deleted_by: "System"
+    })
 
     const data = await User.deleteUser(id)
     res.status(200).json({
