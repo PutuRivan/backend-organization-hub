@@ -7,14 +7,15 @@ export async function getAllEvents(req: Request, res: Response, next: NextFuncti
     // Get query params page and limit (default: page = 1, limit = 10)
     const page = parseInt(req.query.page as string) || 1
     const limit = parseInt(req.query.limit as string) || 10
+    const search = req.query.search as string
     const offset = (page - 1) * limit
 
     // Count total data for pagination
-    const totalItems = await Events.countAll()
+    const totalItems = await Events.countAll(search)
     const totalPages = Math.ceil(totalItems / limit)
 
     // Get data with pagination
-    const data = await Events.getAllEvents(limit, offset)
+    const data = await Events.getAllEvents(limit, offset, search)
 
     res.status(200).json({
       success: true,
@@ -49,16 +50,16 @@ export async function getEventByID(req: Request, res: Response, next: NextFuncti
 
 export async function createEvent(req: Request, res: Response, next: NextFunction) {
   try {
-    const { title, description, location, start_datetime, end_datetime, userId } = req.body;
+    const { name, place, leader, category, dress_code, start_date, end_date } = req.body;
 
     // Check required parameters
-    if (!title || !description || !location || !start_datetime || !end_datetime || !userId) {
+    if (!name || !place || !leader || !category || !dress_code || !start_date || !end_date) {
       throw new CustomError("Parameter tidak lengkap", 400);
     }
 
     // Validate datetime format
-    const startDate = new Date(start_datetime);
-    const endDate = new Date(end_datetime);
+    const startDate = new Date(start_date);
+    const endDate = new Date(end_date);
 
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       throw new CustomError("Format tanggal tidak valid", 400);
@@ -70,12 +71,14 @@ export async function createEvent(req: Request, res: Response, next: NextFunctio
     }
 
     const data = await Events.createEvent({
-      title,
-      description,
-      location,
+      name,
+      place,
+      leader,
+      category,
+      dress_code,
       start_datetime: startDate,
       end_datetime: endDate,
-      userId,
+      userId: req.user.id,
     });
 
     res.status(201).json({ success: true, data });

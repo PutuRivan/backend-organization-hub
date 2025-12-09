@@ -1,12 +1,27 @@
 import { prisma } from "../config/prisma"
 
 class Events {
-  countAll() {
-    return prisma.events.count()
+  countAll(search?: string) {
+    const where: any = {}
+    if (search) {
+      where.name = {
+        contains: search,
+        mode: 'insensitive',
+      }
+    }
+    return prisma.events.count({ where })
   }
 
-  getAllEvents(limit: number, offset: number) {
+  getAllEvents(limit: number, offset: number, search?: string) {
+    const where: any = {}
+    if (search) {
+      where.name = {
+        contains: search,
+        mode: 'insensitive',
+      }
+    }
     return prisma.events.findMany({
+      where,
       skip: offset,
       take: limit,
       orderBy: { created_at: 'desc' },
@@ -42,18 +57,22 @@ class Events {
   }
 
   async createEvent(data: {
-    title: string
-    description: string
-    location: string
+    name: string
+    place: string
+    leader: string
+    category: string
+    dress_code: string
     start_datetime: Date
     end_datetime: Date
     userId: string
   }) {
     return prisma.events.create({
       data: {
-        title: data.title,
-        description: data.description,
-        location: data.location,
+        name: data.name,
+        place: data.place,
+        leader: data.leader,
+        category: data.category,
+        dress_code: data.dress_code,
         start_datetime: data.start_datetime,
         end_datetime: data.end_datetime,
         created_by: data.userId,
