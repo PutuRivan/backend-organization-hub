@@ -90,7 +90,7 @@ export async function createEvent(req: Request, res: Response, next: NextFunctio
 export async function updateEvent(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
-    const { title, description, location, start_datetime, end_datetime } = req.body;
+    const { name, place, leader, category, dress_code, start_datetime, end_datetime } = req.body;
 
     if (!id) throw new CustomError("Parameter id tidak lengkap", 400);
 
@@ -101,9 +101,11 @@ export async function updateEvent(req: Request, res: Response, next: NextFunctio
     // Prepare update data
     const updateData: any = {};
 
-    if (title !== undefined) updateData.title = title;
-    if (description !== undefined) updateData.description = description;
-    if (location !== undefined) updateData.location = location;
+    if (name !== undefined) updateData.name = name;
+    if (place !== undefined) updateData.place = place;
+    if (leader !== undefined) updateData.leader = leader;
+    if (category !== undefined) updateData.category = category;
+    if (dress_code !== undefined) updateData.dress_code = dress_code;
 
     // Validate and convert datetime if provided
     if (start_datetime !== undefined) {
@@ -131,6 +133,8 @@ export async function updateEvent(req: Request, res: Response, next: NextFunctio
 
     // Update data in database
     const updatedData = await Events.updateEvent(id, updateData);
+    console.log(updateData)
+    if (!updatedData) throw new CustomError("Gagal memperbarui event", 500)
 
     res.status(200).json({ success: true, data: updatedData });
   } catch (error) {
@@ -152,7 +156,7 @@ export async function deleteEvent(req: Request, res: Response, next: NextFunctio
     const archivedEvent = await Archive.archiveEvent(existingEvent, req.user.id)
 
     if (!archivedEvent) throw new CustomError("Gagal mengarsipkan event", 500)
-      
+
     // Delete the event
     const data = await Events.deleteEvent(id)
 

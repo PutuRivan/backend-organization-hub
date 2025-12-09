@@ -93,18 +93,22 @@ class Events {
   async updateEvent(
     id: string,
     data: {
-      title?: string
-      description?: string
-      location?: string
+      name?: string
+      place?: string
+      leader?: string
+      category?: string
+      dress_code?: string
       start_datetime?: Date
       end_datetime?: Date
     }
   ) {
     const updateData: any = {}
 
-    if (data.title !== undefined) updateData.title = data.title
-    if (data.description !== undefined) updateData.description = data.description
-    if (data.location !== undefined) updateData.location = data.location
+    if (data.name !== undefined) updateData.name = data.name
+    if (data.place !== undefined) updateData.place = data.place
+    if (data.leader !== undefined) updateData.leader = data.leader
+    if (data.category !== undefined) updateData.category = data.category
+    if (data.dress_code !== undefined) updateData.dress_code = data.dress_code
     if (data.start_datetime !== undefined) updateData.start_datetime = data.start_datetime
     if (data.end_datetime !== undefined) updateData.end_datetime = data.end_datetime
 
