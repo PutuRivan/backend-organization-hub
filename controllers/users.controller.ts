@@ -86,8 +86,8 @@ export async function createUser(req: Request, res: Response, next: NextFunction
       });
     }
 
-    const imageUrl = (image as any).path || (image as any).secure_url;
-    
+    const imageUrl = image ? ((image as any).path || (image as any).secure_url) : null;
+
     // **Check Unique Email**
     const existingEmail = await User.getUserByEmail(email)
 
@@ -126,7 +126,7 @@ export async function createUser(req: Request, res: Response, next: NextFunction
 
     return res.status(201).json({
       success: true,
-      message: "User berhasil dibuat.",
+      message: image ? "User berhasil dibuat." : "User berhasil dibuat, namun gambar gagal diunggah.",
       data: newUser,
     });
 
