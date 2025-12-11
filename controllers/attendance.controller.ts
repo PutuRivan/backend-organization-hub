@@ -65,12 +65,16 @@ export async function createAttendance(req: Request, res: Response, next: NextFu
       }
       normalizedStatus = status as AttendanceStatus
     }
-
+    console.log(absentReason)
     if (absentReason) {
       if (!Object.values(AttendanceAbsentReason).includes(absentReason)) {
         throw new CustomError("Alasan ketidakhadiran tidak valid", 400)
       }
       normalizedAbsentReason = absentReason as AttendanceAbsentReason
+    }
+
+    if (normalizedStatus === AttendanceStatus.Kurang && !normalizedAbsentReason) {
+      throw new CustomError("Wajib memberikan alasan ketidakhadiran (Dinas, DIK, Izin, Cuti, Sakit, Hamil, BKO, TK, Terlambat) jika status absensi 'Kurang'", 400)
     }
 
     const now = new Date()
