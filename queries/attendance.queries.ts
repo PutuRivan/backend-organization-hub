@@ -127,28 +127,41 @@ class Attendance {
       where: { ...where, status: "Hadir" }
     });
 
-    const izin = await prisma.attendance.count({
-      where: { ...where, status: "Izin" }
-    });
-
-    const sakit = await prisma.attendance.count({
-      where: { ...where, status: "Sakit" }
-    });
-
-    const alfa = await prisma.attendance.count({
-      where: { ...where, status: "Alfa" }
-    });
+    // Absent Reasons
+    const dinas = await prisma.attendance.count({ where: { ...where, AbsentReason: "Dinas" } });
+    const dik = await prisma.attendance.count({ where: { ...where, AbsentReason: "DIK" } });
+    const izin = await prisma.attendance.count({ where: { ...where, AbsentReason: "Izin" } });
+    const cuti = await prisma.attendance.count({ where: { ...where, AbsentReason: "Cuti" } });
+    const sakit = await prisma.attendance.count({ where: { ...where, AbsentReason: "Sakit" } });
+    const hamil = await prisma.attendance.count({ where: { ...where, AbsentReason: "Hamil" } });
+    const bko = await prisma.attendance.count({ where: { ...where, AbsentReason: "BKO" } });
+    const tk = await prisma.attendance.count({ where: { ...where, AbsentReason: "TK" } });
+    const terlambat = await prisma.attendance.count({ where: { ...where, AbsentReason: "Terlambat" } });
 
     return {
       total,
       hadir,
-      izin,
-      sakit,
-      alfa,
       hadirPercentage: total > 0 ? Math.round((hadir / total) * 100) : 0,
-      izinPercentage: total > 0 ? Math.round((izin / total) * 100) : 0,
-      sakitPercentage: total > 0 ? Math.round((sakit / total) * 100) : 0,
-      alfaPercentage: total > 0 ? Math.round((alfa / total) * 100) : 0,
+      Kurang: {
+        dinas,
+        dik,
+        izin,
+        cuti,
+        sakit,
+        hamil,
+        bko,
+        tk,
+        terlambat,
+        dinasPercentage: total > 0 ? Math.round((dinas / total) * 100) : 0,
+        dikPercentage: total > 0 ? Math.round((dik / total) * 100) : 0,
+        izinPercentage: total > 0 ? Math.round((izin / total) * 100) : 0,
+        cutiPercentage: total > 0 ? Math.round((cuti / total) * 100) : 0,
+        sakitPercentage: total > 0 ? Math.round((sakit / total) * 100) : 0,
+        hamilPercentage: total > 0 ? Math.round((hamil / total) * 100) : 0,
+        bkoPercentage: total > 0 ? Math.round((bko / total) * 100) : 0,
+        tkPercentage: total > 0 ? Math.round((tk / total) * 100) : 0,
+        terlambatPercentage: total > 0 ? Math.round((terlambat / total) * 100) : 0,
+      }
     };
   }
 
