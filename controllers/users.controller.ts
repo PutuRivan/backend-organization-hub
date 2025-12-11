@@ -87,13 +87,24 @@ export async function createUser(req: Request, res: Response, next: NextFunction
     }
 
     const imageUrl = (image as any).path || (image as any).secure_url;
-
+    
     // **Check Unique Email**
     const existingEmail = await User.getUserByEmail(email)
 
-
+    if (existingEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email sudah terdaftar.",
+      });
+    }
     // **Check Unique NRP**
     const existingNRP = await User.getUserByNRP(nrp)
+    if (existingNRP) {
+      return res.status(400).json({
+        success: false,
+        message: "NRP sudah terdaftar.",
+      });
+    }
 
     // **Hash Password**
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -104,7 +115,7 @@ export async function createUser(req: Request, res: Response, next: NextFunction
       nrp: nrp,
       image: imageUrl ?? null,
       jabatan: jabatan,
-      password: password,
+      password: hashedPassword,
       status: status,
       role: role,
       pangkat: pangkat,
