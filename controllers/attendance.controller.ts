@@ -1,4 +1,4 @@
-import { AttendanceStatus } from "@prisma/client";
+import { AttendanceStatus, AttendanceAbsentReason } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import CustomError from "../handler/CustomError";
 import { Attendance } from "../queries";
@@ -55,8 +55,9 @@ export async function createAttendance(req: Request, res: Response, next: NextFu
       throw new CustomError("User tidak ditemukan pada token atau body", 400)
     }
 
-    const { status, note } = req.body
+    const { status, note, absentReason } = req.body
     let normalizedStatus: AttendanceStatus | undefined = undefined
+    let normalizedAbsentReason: AttendanceAbsentReason | undefined = undefined
 
     if (status) {
       if (!Object.values(AttendanceStatus).includes(status)) {
@@ -65,45 +66,68 @@ export async function createAttendance(req: Request, res: Response, next: NextFu
       normalizedStatus = status as AttendanceStatus
     }
 
+    if (absentReason) {
+      if (!Object.values(AttendanceAbsentReason).includes(absentReason)) {
+        throw new CustomError("Alasan ketidakhadiran tidak valid", 400)
+      }
+      normalizedAbsentReason = absentReason as AttendanceAbsentReason
+    }
+
     const now = new Date()
     const dayStart = new Date(now)
     dayStart.setHours(0, 0, 0, 0)
     const dayEnd = new Date(now)
     dayEnd.setHours(23, 59, 59, 999)
 
-    const existingAttendance = await Attendance.getAttendanceByUserAndDate(targetUserId, dayStart, dayEnd)
+    const existingAttendance = await Attendance.getAttendanceByUserAndDate(
+      targetUserId,
+      dayStart,
+      dayEnd
+    )
 
+    // === ABSENSI MASUK ===
     if (!existingAttendance) {
-      const createdAttendance = await Attendance.createAttendance({
+      const createData: any = {
         userId: targetUserId,
         date: now,
         timeIn: now,
         status: normalizedStatus ?? AttendanceStatus.Hadir,
-        note
-      })
+      }
 
-      res.status(201).json({
+      if (normalizedAbsentReason) createData.absentReason = normalizedAbsentReason
+      if (note) createData.note = note
+
+      const createdAttendance = await Attendance.createAttendance(createData)
+
+      return res.status(201).json({
         success: true,
         message: "Berhasil melakukan absensi masuk",
-        data: createdAttendance
+        data: createdAttendance,
       })
-      return
     }
 
+    // === ABSENSI PULANG ===
     if (existingAttendance.time_out) {
       throw new CustomError("Anda sudah menyelesaikan absensi hari ini", 400)
     }
 
-    const updatedAttendance = await Attendance.checkoutAttendance(existingAttendance.id, {
+    const updateData: any = {
       timeOut: now,
       status: normalizedStatus ?? existingAttendance.status,
-      note: note ?? existingAttendance.note ?? undefined
-    })
+    }
+
+    if (normalizedAbsentReason) updateData.absentReason = normalizedAbsentReason
+    if (note) updateData.note = note
+
+    const updatedAttendance = await Attendance.checkoutAttendance(
+      existingAttendance.id,
+      updateData
+    )
 
     res.status(200).json({
       success: true,
       message: "Berhasil melakukan absensi pulang",
-      data: updatedAttendance
+      data: updatedAttendance,
     })
   } catch (error) {
     next(error)

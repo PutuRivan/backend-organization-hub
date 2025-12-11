@@ -1,4 +1,4 @@
-import { AttendanceStatus } from "@prisma/client"
+import { AttendanceStatus, AttendanceAbsentReason } from "@prisma/client"
 import { prisma } from "../config/prisma"
 
 class Attendance {
@@ -25,24 +25,33 @@ class Attendance {
     })
   }
 
-  createAttendance(data: { userId: string, date: Date, timeIn: Date, status: AttendanceStatus, note?: string }) {
+  createAttendance(data: {
+    userId: string
+    date: Date
+    timeIn?: Date
+    status: AttendanceStatus
+    absentReason?: AttendanceAbsentReason
+    note?: string
+  }) {
     return prisma.attendance.create({
       data: {
         user_id: data.userId,
         date: data.date,
-        time_in: data.timeIn,
+        time_in: data.timeIn ?? null,
         status: data.status,
-        note: data.note ?? null
+        ...(data.absentReason && { AbsentReason: data.absentReason }),
+        ...(data.note && { note: data.note })
       }
     })
   }
 
-  checkoutAttendance(id: string, data: { timeOut: Date, status?: AttendanceStatus, note?: string }) {
+  checkoutAttendance(id: string, data: { timeOut: Date, status?: AttendanceStatus, absentReason?: AttendanceAbsentReason, note?: string }) {
     return prisma.attendance.update({
       where: { id },
       data: {
         time_out: data.timeOut,
         ...(data.status ? { status: data.status } : {}),
+        ...(data.absentReason ? { AbsentReason: data.absentReason } : {}),
         ...(data.note !== undefined ? { note: data.note ?? null } : {})
       }
     })
