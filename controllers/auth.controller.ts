@@ -18,6 +18,17 @@ export async function Login(req: Request, res: Response, next: NextFunction) {
       expiresIn: '1d',
     });
 
+    console.log(dataUser)
+
+    const now = new Date()
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
+
+    const todayAttendance = dataUser.attendance.find((att: any) => {
+      const attDate = new Date(att.date)
+      return attDate >= startOfDay && attDate <= endOfDay
+    })
+
     const userDataMapper = {
       id: dataUser.id,
       name: dataUser.name,
@@ -28,6 +39,13 @@ export async function Login(req: Request, res: Response, next: NextFunction) {
       image: dataUser.image,
       nrp: dataUser.nrp,
       status: dataUser.status,
+      attendance: todayAttendance ? {
+        id: todayAttendance.id,
+        time_in: todayAttendance.time_in,
+        time_out: todayAttendance.time_out,
+        status: todayAttendance.status,
+        absent_reason: todayAttendance.AbsentReason,
+      } : null
     }
 
     return res
