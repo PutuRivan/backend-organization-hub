@@ -50,7 +50,7 @@ export async function getEventByID(req: Request, res: Response, next: NextFuncti
 
 export async function createEvent(req: Request, res: Response, next: NextFunction) {
   try {
-    const { name, place, leader, category, dress_code, start_date, end_date } = req.body;
+    const { name, place, leader, category, dress_code, start_date, end_date, visibility } = req.body;
 
     // Check required parameters
     if (!name || !place || !leader || !category || !dress_code || !start_date || !end_date) {
@@ -79,6 +79,7 @@ export async function createEvent(req: Request, res: Response, next: NextFunctio
       start_datetime: startDate,
       end_datetime: endDate,
       userId: req.user.id,
+      visibility,
     });
 
     res.status(201).json({ success: true, data });

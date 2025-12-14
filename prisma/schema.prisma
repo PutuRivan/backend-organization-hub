@@ -41,6 +41,11 @@ enum UserStatus {
   Tidak_Aktif
 }
 
+enum EventVisibility {
+  Global // dibuat admin → semua bisa lihat
+  Private // dibuat personel → hanya owner & admin
+}
+
 model Users {
   id         String     @id @default(uuid())
   name       String
@@ -105,6 +110,7 @@ model Events {
   start_datetime DateTime
   end_datetime   DateTime
   created_by     String
+  visibility     EventVisibility
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
 

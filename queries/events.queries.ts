@@ -1,3 +1,4 @@
+import { EventVisibility } from "@prisma/client"
 import { prisma } from "../config/prisma"
 
 class Events {
@@ -64,6 +65,7 @@ class Events {
     dress_code: string
     start_datetime: Date
     end_datetime: Date
+    visibility: EventVisibility
     userId: string
   }) {
     return prisma.events.create({
@@ -76,6 +78,7 @@ class Events {
         start_datetime: data.start_datetime,
         end_datetime: data.end_datetime,
         created_by: data.userId,
+        visibility: data.visibility,
       },
       include: {
         createdBy: {
