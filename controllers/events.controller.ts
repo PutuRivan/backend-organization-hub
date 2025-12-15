@@ -53,7 +53,7 @@ export async function createEvent(req: Request, res: Response, next: NextFunctio
     const { name, place, leader, category, dress_code, start_date, end_date, visibility } = req.body;
 
     // Check required parameters
-    if (!name || !place || !leader || !category || !dress_code || !start_date || !end_date) {
+    if (!name || !place || !leader || !category || !dress_code || !start_date || !end_date || !visibility) {
       throw new CustomError("Parameter tidak lengkap", 400);
     }
 
