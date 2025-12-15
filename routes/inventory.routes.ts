@@ -8,7 +8,7 @@ const inventoryUpload = createUpload("siRotekinfo/inventory");
 export default function (app: any) {
   app.get('/inventory', authorization(['Admin', 'Personel']), getAllInventory)
   app.get('/inventory/:id', authorization(['Admin', 'Personel']), getInventoryByID)
-  app.post('/inventory', authorization(['Admin']), inventoryUpload.single("image"), createInventory)
-  app.put('/inventory/:id', authorization(['Admin']), inventoryUpload.single("image"), updateInventory)
-  app.delete('/inventory/:id', authorization(['Admin']), deleteInventory)
+  app.post('/inventory', authorization(['Admin', 'Personel']), inventoryUpload.single("image"), createInventory)
+  app.put('/inventory/:id', authorization(['Admin', 'Personel']), inventoryUpload.single("image"), updateInventory)
+  app.delete('/inventory/:id', authorization(['Admin', 'Personel']), deleteInventory)
 }
