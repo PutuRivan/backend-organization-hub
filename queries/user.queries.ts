@@ -28,7 +28,7 @@ class User {
     })
   }
 
-  getAllPersonel(limit: number, offset: number) {
+  getAllPersonel(limit: number, offset: number, startOfDay: Date, endOfDay: Date) {
     return prisma.users.findMany({
       where: {
         role: "Personel"
@@ -37,6 +37,16 @@ class User {
       take: limit,
       orderBy: {
         created_at: "desc"
+      },
+      include: {
+        attendance: {
+          where: {
+            date: {
+              gte: startOfDay,
+              lte: endOfDay
+            }
+          }
+        }
       }
     })
   }

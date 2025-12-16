@@ -62,7 +62,8 @@ class Attendance {
     name?: string,
     page: number = 1,
     limit: number = 10,
-    status?: AttendanceStatus
+    status?: AttendanceStatus,
+    absentReason?: AttendanceAbsentReason
   ) {
     const where: any = {
       user: {
@@ -72,6 +73,10 @@ class Attendance {
 
     if (status) {
       where.status = status;
+    }
+
+    if (absentReason) {
+      where.AbsentReason = absentReason;
     }
 
     if (name) {

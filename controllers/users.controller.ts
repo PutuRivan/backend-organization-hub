@@ -35,14 +35,29 @@ export async function getAllPersonel(req: Request, res: Response, next: NextFunc
     const limit = parseInt(req.query.limit as string) || 10
     const offset = (page - 1) * limit
 
-    const totalUser = await User.countAll()
+    const today = new Date()
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0))
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999))
+
+    const totalUser = await User.countPersonel()
     const totalPages = Math.ceil(totalUser / limit)
 
-    const data = await User.getAllPersonel(limit, offset)
+    const data = await User.getAllPersonel(limit, offset, startOfDay, endOfDay)
+
+    const processedData = data.map((user) => {
+      const attendance = user.attendance[0]
+
+      const attendanceStatus = attendance?.AbsentReason ? attendance.AbsentReason : attendance?.status ? attendance.status : "Belum Melakukan Absensi"
+
+      return {
+        ...user,
+        attendance_status: attendanceStatus
+      }
+    })
 
     res.status(200).json({
       success: true,
-      data,
+      data: processedData,
       pagination: {
         totalUser,
         totalPages,

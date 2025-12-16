@@ -169,21 +169,37 @@ export async function getPersonelAttendance(
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
 
-    if (
-      status &&
-      !Object.values(AttendanceStatus).includes(status as AttendanceStatus)
-    ) {
-      throw new CustomError("Status absensi tidak valid", 400);
+    let filterStatus: AttendanceStatus | undefined;
+    let filterAbsentReason: AttendanceAbsentReason | undefined;
+
+    if (status) {
+      const statusString = status as string;
+      if (
+        Object.values(AttendanceStatus).includes(statusString as AttendanceStatus)
+      ) {
+        filterStatus = statusString as AttendanceStatus;
+      } else if (
+        Object.values(AttendanceAbsentReason).includes(
+          statusString as AttendanceAbsentReason
+        )
+      ) {
+        filterAbsentReason = statusString as AttendanceAbsentReason;
+      } else {
+        throw new CustomError(
+          "Status atau alasan ketidakhadiran tidak valid",
+          400
+        );
+      }
     }
 
-    const { data, totalData } =
-      await Attendance.getAttendanceByPersonel(
-        parsedDate, // ✅ FIXED
-        name as string | undefined,
-        pageNumber,
-        limitNumber,
-        status as AttendanceStatus | undefined
-      );
+    const { data, totalData } = await Attendance.getAttendanceByPersonel(
+      parsedDate, // ✅ FIXED
+      name as string | undefined,
+      pageNumber,
+      limitNumber,
+      filterStatus,
+      filterAbsentReason
+    );
 
     res.status(200).json({
       success: true,
