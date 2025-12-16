@@ -2,7 +2,7 @@ import { EventVisibility } from "@prisma/client"
 import { prisma } from "../config/prisma"
 
 class Events {
-  countAll(search?: string) {
+  countAll(search?: string, userId?: string, userRole?: string) {
     const where: any = {}
     if (search) {
       where.name = {
@@ -10,10 +10,23 @@ class Events {
         mode: 'insensitive',
       }
     }
+
+    if (userRole !== 'Admin') {
+      where.OR = [
+        { visibility: 'Global' },
+        {
+          AND: [
+            { visibility: 'Private' },
+            { created_by: userId }
+          ]
+        }
+      ]
+    }
+
     return prisma.events.count({ where })
   }
 
-  getAllEvents(limit: number, offset: number, search?: string) {
+  getAllEvents(limit: number, offset: number, search?: string, userId?: string, userRole?: string) {
     const where: any = {}
     if (search) {
       where.name = {
@@ -21,6 +34,19 @@ class Events {
         mode: 'insensitive',
       }
     }
+
+    if (userRole !== 'Admin') {
+      where.OR = [
+        { visibility: 'Global' },
+        {
+          AND: [
+            { visibility: 'Private' },
+            { created_by: userId }
+          ]
+        }
+      ]
+    }
+
     return prisma.events.findMany({
       where,
       skip: offset,

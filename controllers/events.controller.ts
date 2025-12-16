@@ -10,12 +10,15 @@ export async function getAllEvents(req: Request, res: Response, next: NextFuncti
     const search = req.query.search as string
     const offset = (page - 1) * limit
 
+    const userId = req.user?.id
+    const userRole = req.user?.role
+
     // Count total data for pagination
-    const totalItems = await Events.countAll(search)
+    const totalItems = await Events.countAll(search, userId, userRole)
     const totalPages = Math.ceil(totalItems / limit)
 
     // Get data with pagination
-    const data = await Events.getAllEvents(limit, offset, search)
+    const data = await Events.getAllEvents(limit, offset, search, userId, userRole)
 
     res.status(200).json({
       success: true,
