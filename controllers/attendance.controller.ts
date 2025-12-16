@@ -15,8 +15,8 @@ export async function getAllAttendance(req: Request, res: Response, next: NextFu
 
 export async function getTodayAttendance(req: Request, res: Response, next: NextFunction) {
   try {
-    const authenticatedUserId = req.user?.id
-
+    const authenticatedUserId = req.params?.userId
+    
     if (!authenticatedUserId) {
       throw new CustomError("User tidak ditemukan pada token", 401)
     }
@@ -48,8 +48,16 @@ export async function getTodayAttendance(req: Request, res: Response, next: Next
 
 export async function createAttendance(req: Request, res: Response, next: NextFunction) {
   try {
-    const authenticatedUserId = req.user?.id
-    const targetUserId = req.body.userId || authenticatedUserId
+    // const authenticatedUserId = req.user?.id
+    // const targetUserId = req.body.userId || authenticatedUserId
+
+    let targetUserId = ""
+
+    if (req.body?.userId) {
+      targetUserId = req.body.userId!
+    } else if (req.user?.id) {
+      targetUserId = req.user.id!
+    }
 
     if (!targetUserId) {
       throw new CustomError("User tidak ditemukan pada token atau body", 400)
