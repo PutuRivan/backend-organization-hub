@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { Inventory } from "../queries";
 import CustomError from "../handler/CustomError";
-import { deleteImageFromCloudinary } from "../services/upload";
+import { deleteImageFromCloudinary, getProccesedUrl } from "../services/upload";
 
 export async function getAllInventory(req: Request, res: Response, next: NextFunction) {
   try {
@@ -65,7 +65,7 @@ export async function createInventory(req: Request, res: Response, next: NextFun
     }
 
     // Dapatkan URL dari Cloudinary (req.file.path berisi secure URL dari Cloudinary)
-    const imageUrl = (file as any).path || (file as any).secure_url;
+    const imageUrl = getProccesedUrl(file);
 
     const data = await Inventory.createInventory({
       name,
@@ -100,7 +100,7 @@ export async function updateInventory(req: Request, res: Response, next: NextFun
     // Jika ada file baru diupload, ganti gambar lama
     if (req.file) {
       // Dapatkan URL baru dari Cloudinary
-      imageUrl = (req.file as any).path || (req.file as any).secure_url;
+      imageUrl = getProccesedUrl(req.file);
 
       // Hapus file lama dari Cloudinary (jika ada)
       if (existingInventory.image) {

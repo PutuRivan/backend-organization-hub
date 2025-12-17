@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import routes from "./routes";
+import path from "path";
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.JWT_SECRET!));
+app.use("/public", express.static(path.join(process.cwd(), "public")));
 routes(app)
 
 app.get("/", (req, res) => {

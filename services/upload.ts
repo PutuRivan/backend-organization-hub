@@ -1,33 +1,22 @@
-// src/middleware/upload.ts
 import multer from "multer";
-import { v2 as cloudinary } from "cloudinary";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-// Validasi environment variables
-if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-  throw new Error("Cloudinary environment variables are not set. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in your .env file");
-}
-
-// Konfigurasi Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import path from "path";
+import fs from "fs";
 
 // Fungsi untuk membuat storage dengan folder yang dinamis
 const createStorage = (folder: string) => {
-  return new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: async (req, file) => {
-      return {
-        folder: folder,
-        allowed_formats: ["jpg", "jpeg", "png", "pdf", "doc", "docx"], // Menambahkan format file dokumen
-        transformation: [{ width: 1000, height: 1000, crop: "limit" }],
-      };
+  return multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadPath = path.join(process.cwd(), "public", folder);
+      // Buat folder jika belum ada
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      const ext = path.extname(file.originalname);
+      cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
     },
   });
 };
@@ -41,7 +30,11 @@ export const createUpload = (folder: string = "uploads") => {
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
     fileFilter: (req, file, cb) => {
       const allowedImages = ["image/png", "image/jpeg", "image/jpg"];
-      const allowedDocs = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+      const allowedDocs = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
       const allowed = [...allowedImages, ...allowedDocs];
 
       if (!allowed.includes(file.mimetype)) {
@@ -52,38 +45,46 @@ export const createUpload = (folder: string = "uploads") => {
   });
 };
 
-// Default upload instance untuk backward compatibility (menggunakan folder "inventory")
+// Default upload instance for backward compatibility
 export const upload = createUpload("inventory");
 
-// Export cloudinary instance untuk digunakan di controller
-export { cloudinary };
 
-// Helper function untuk menghapus file dari Cloudinary
-export async function deleteImageFromCloudinary(imageUrl: string): Promise<void> {
+// Helper function untuk menghapus file dari storage local
+export async function deleteImageFromCloudinary(filePath: string): Promise<void> {
   try {
-    // Extract public_id dari URL Cloudinary
-    // Format URL: https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{folder}/{public_id}.{ext}
-    const urlParts = imageUrl.split("/");
-    const uploadIndex = urlParts.findIndex((part) => part === "upload");
+    if (!filePath) return;
 
-    if (uploadIndex === -1) {
-      // Jika bukan URL Cloudinary, skip
+    // Handle jika formatnya masih URL Cloudinary (legacy support - do nothing or log)
+    if (filePath.startsWith("http") && filePath.includes("cloudinary")) {
+      // console.warn("Cannot delete legacy Cloudinary file locally:", filePath);
       return;
     }
 
-    // Ambil bagian setelah "upload" (v{version}/{folder}/{public_id}.{ext})
-    const pathAfterUpload = urlParts.slice(uploadIndex + 1).join("/");
+    // Handle local file path
+    // Path di database bisa berupa "/public/..." atau relative path
+    let localPath = filePath;
+    if (filePath.startsWith("/")) {
+      localPath = filePath.substring(1); // remove leading slash
+    }
 
-    // Hapus versi (v{number}/) jika ada
-    const pathWithoutVersion = pathAfterUpload.replace(/^v\d+\//, "");
+    const fullPath = path.join(process.cwd(), localPath);
 
-    // Hapus ekstensi file untuk mendapatkan public_id
-    const publicId = pathWithoutVersion.replace(/\.[^/.]+$/, "");
-
-    // Hapus file dari Cloudinary
-    await cloudinary.uploader.destroy(publicId);
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+    }
   } catch (error) {
-    console.error("Error deleting image from Cloudinary:", error);
-    // Tidak throw error agar tidak mengganggu proses utama
+    console.error("Error deleting file:", error);
   }
 }
+
+// Helper untuk mendapatkan URL file yang bisa diakses public
+export const getProccesedUrl = (file: Express.Multer.File) => {
+  const relativePath = path.relative(process.cwd(), file.path);
+  return "/" + relativePath.replace(/\\/g, "/");
+};
+
+// Export dummy cloudinary object to prevent imports breaking (optional, but requested to refactor away)
+// But since the user wants to remove Cloudinary, we should probably remove it.
+// However, if I break the controllers imports immediately, the build fails.
+// Since I will fix controllers next, I won't export cloudinary.
+

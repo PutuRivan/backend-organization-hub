@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { User, Attendance, AttendanceRecap, Archive } from "../queries";
 import bcrypt from 'bcrypt'
-import { deleteImageFromCloudinary } from "../services/upload";
+import { deleteImageFromCloudinary, getProccesedUrl } from "../services/upload";
 
 export async function getAllUser(req: Request, res: Response, next: NextFunction) {
   try {
@@ -101,7 +101,7 @@ export async function createUser(req: Request, res: Response, next: NextFunction
       });
     }
 
-    const imageUrl = image ? ((image as any).path || (image as any).secure_url) : null;
+    const imageUrl = image ? getProccesedUrl(image) : null;
 
     // **Check Unique Email**
     const existingEmail = await User.getUserByEmail(email)
@@ -128,7 +128,7 @@ export async function createUser(req: Request, res: Response, next: NextFunction
       name: name,
       email: email,
       nrp: nrp,
-      image: imageUrl ?? null,
+      ...(imageUrl ? { image: imageUrl } : {}),
       jabatan: jabatan,
       password: hashedPassword,
       status: status,
