@@ -100,6 +100,38 @@ class User {
     })
   }
 
+  updateUser(id: string, data: {
+    name?: string,
+    email?: string,
+    nrp?: string
+    image?: string
+    jabatan?: string
+    password?: string
+    status?: UserStatus
+    role?: Role
+    pangkat?: string
+    userId?: string
+  }) {
+    const updateData: any = {}
+
+    if (data.name !== undefined) updateData.name = data.name
+    if (data.email !== undefined) updateData.email = data.email
+    if (data.nrp !== undefined) updateData.nrp = data.nrp
+    if (data.image !== undefined) updateData.image = data.image
+    if (data.jabatan !== undefined) updateData.jabatan = data.jabatan
+    if (data.password !== undefined) updateData.password = data.password
+    if (data.status !== undefined) updateData.status = data.status
+    if (data.role !== undefined) updateData.role = data.role
+    if (data.pangkat !== undefined) updateData.pangkat = data.pangkat
+    
+    return prisma.users.update({
+      where: {
+        id: id
+      },
+      data: updateData
+    })
+  }
+
   deleteUser(id: string) {
     return prisma.users.delete({
       where: {

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { User, Attendance, AttendanceRecap, Archive } from "../queries";
 import bcrypt from 'bcrypt'
 import { deleteImageFromCloudinary, getProccesedUrl } from "../services/upload";
+import CustomError from "../handler/CustomError";
 
 export async function getAllUser(req: Request, res: Response, next: NextFunction) {
   try {
@@ -208,6 +209,47 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
     res.status(200).json({
       success: true,
       message: "User berhasil dihapus.",
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function updateUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params
+    const { name, email, nrp, jabatan, password, role, status, pangkat, userId } = req.body
+
+    if (!id) throw new CustomError("Parameter id tidak lengkap", 400);
+
+    const existingUser = await User.getUserById(id)
+    if (!existingUser) throw new CustomError("Data User tidak ditemukan", 404);
+
+    let imageUrl = existingUser.image;
+
+    if (req.file) {
+      imageUrl = getProccesedUrl(req.file);
+      if (existingUser.image) {
+        await deleteImageFromCloudinary(existingUser.image);
+      }
+    }
+
+    const updatedUser = await User.updateUser(id, {
+      name: name ?? existingUser.name,
+      email: email ?? existingUser.email,
+      nrp: nrp ?? existingUser.nrp,
+      jabatan: jabatan ?? existingUser.jabatan,
+      password: password ?? existingUser.password,
+      status: status ?? existingUser.status,
+      pangkat: pangkat ?? existingUser.pangkat,
+      role: role ?? existingUser.role,
+      userId: userId ?? existingUser.id,
+      image: imageUrl ?? "",
+    })
+    res.status(200).json({
+      success: true,
+      message: "User berhasil diperbarui.",
+      data: updatedUser,
     })
   } catch (error) {
     next(error)
