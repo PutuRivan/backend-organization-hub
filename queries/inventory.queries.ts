@@ -28,7 +28,7 @@ class Inventory {
     category: string
     location: string
     description: string | null
-    image: string
+    image: string | null
     userId: string
   }) {
     return prisma.inventory.create({
@@ -54,7 +54,7 @@ class Inventory {
       category?: string
       location?: string
       description?: string
-      image?: string
+      image?: string | null
       userId?: string
     }
   ) {

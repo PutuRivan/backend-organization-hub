@@ -58,14 +58,11 @@ export async function createInventory(req: Request, res: Response, next: NextFun
       throw new CustomError("Parameter tidak lengkap", 400);
     }
 
-    // Ambil file dari multer (bukan dari req.body)
+    // Ambil file dari multer (bukan dari req.body) - sekarang optional
     const file = req.file;
-    if (!file) {
-      throw new CustomError("File gambar wajib diunggah", 400);
-    }
 
-    // Dapatkan URL dari Cloudinary (req.file.path berisi secure URL dari Cloudinary)
-    const imageUrl = getProccesedUrl(file);
+    // Dapatkan URL dari Cloudinary jika ada file yang diunggah
+    const imageUrl = file ? getProccesedUrl(file) : null;
 
     const data = await Inventory.createInventory({
       name,
@@ -116,7 +113,7 @@ export async function updateInventory(req: Request, res: Response, next: NextFun
       category: category ?? existingInventory.category,
       location: location ?? existingInventory.location,
       description: description ?? existingInventory.description,
-      image: imageUrl,
+      image: imageUrl ?? existingInventory.image,
       userId: userId ?? existingInventory.id,
     });
 
