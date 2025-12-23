@@ -7,11 +7,31 @@ class User {
     return prisma.users.count()
   }
 
-  countPersonel() {
-    return prisma.users.count({
-      where: {
-        role: "Personel"
+  countPersonel(filters?: { name?: string, jabatan?: string, status?: string }) {
+    const where: any = {
+      role: "Personel"
+    }
+
+    if (filters?.name) {
+      where.name = {
+        contains: filters.name,
+        mode: 'insensitive'
       }
+    }
+
+    if (filters?.jabatan) {
+      where.jabatan = {
+        contains: filters.jabatan,
+        mode: 'insensitive'
+      }
+    }
+
+    if (filters?.status) {
+      where.status = filters.status
+    }
+
+    return prisma.users.count({
+      where
     })
   }
 
@@ -28,11 +48,31 @@ class User {
     })
   }
 
-  getAllPersonel(limit: number, offset: number, startOfDay: Date, endOfDay: Date) {
+  getAllPersonel(limit: number, offset: number, startOfDay: Date, endOfDay: Date, filters?: { name?: string, jabatan?: string, status?: string }) {
+    const where: any = {
+      role: "Personel"
+    }
+
+    if (filters?.name) {
+      where.name = {
+        contains: filters.name,
+        mode: 'insensitive'
+      }
+    }
+
+    if (filters?.jabatan) {
+      where.jabatan = {
+        contains: filters.jabatan,
+        mode: 'insensitive'
+      }
+    }
+
+    if (filters?.status) {
+      where.status = filters.status
+    }
+
     return prisma.users.findMany({
-      where: {
-        role: "Personel"
-      },
+      where,
       skip: offset,
       take: limit,
       orderBy: {
@@ -123,7 +163,7 @@ class User {
     if (data.status !== undefined) updateData.status = data.status
     if (data.role !== undefined) updateData.role = data.role
     if (data.pangkat !== undefined) updateData.pangkat = data.pangkat
-    
+
     return prisma.users.update({
       where: {
         id: id

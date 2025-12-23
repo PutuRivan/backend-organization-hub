@@ -101,7 +101,7 @@ model Inventory {
 }
 
 model Events {
-  id             String   @id @default(uuid())
+  id             String          @id @default(uuid())
   name           String
   place          String
   leader         String?
@@ -111,8 +111,8 @@ model Events {
   end_datetime   DateTime
   created_by     String
   visibility     EventVisibility
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
 
   // Relasi
   createdBy Users @relation("EventCreatedBy", fields: [created_by], references: [id])
