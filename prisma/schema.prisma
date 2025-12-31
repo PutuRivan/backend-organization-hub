@@ -80,7 +80,6 @@ model Attendance {
   user_id      String
   date         DateTime
   time_in      DateTime?
-  time_out     DateTime?
   status       AttendanceStatus
   AbsentReason AttendanceAbsentReason?
   note         String?

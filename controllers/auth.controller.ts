@@ -6,10 +6,11 @@ import jwt from 'jsonwebtoken'
 
 export async function Login(req: Request, res: Response, next: NextFunction) {
   try {
-    const { email, password } = req.body
+    const { email, nrp, password } = req.body
 
-    const dataUser = await User.getUserByEmail(email)
-    if (!dataUser) throw new CustomError("Email Tidak Ditemukan", 404)
+    let dataUser = await User.getUserByEmail(email)
+    if (!dataUser) dataUser = await User.getUserByNRP(nrp)
+    if (!dataUser) throw new CustomError("Data Tidak Ditemukan", 404)
 
     const match = await bcrypt.compare(password, dataUser.password)
     if (!match) throw new CustomError("Password Tidak Valid", 401)
@@ -17,8 +18,6 @@ export async function Login(req: Request, res: Response, next: NextFunction) {
     const token = jwt.sign({ id: dataUser.id, role: dataUser.role, email: dataUser.email }, process.env.JWT_SECRET!, {
       expiresIn: '1d',
     });
-
-    console.log(dataUser)
 
     const now = new Date()
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)

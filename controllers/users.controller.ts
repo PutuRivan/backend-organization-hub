@@ -62,9 +62,38 @@ export async function getAllPersonel(req: Request, res: Response, next: NextFunc
       }
     })
 
+    // Sort by division first, then by pangkat within each division
+    const divisionOrder = ['BagJiansis', 'BagDuknis', 'BagAplikasi', 'Urtu']
+    const pangkatOrder = ['AKBP', 'KOMPOL', 'PEMBINA', 'AKP', 'IPTU', 'BRIGADIR', 'BRIPTU', 'BRIPDA', 'PENGATUR']
+
+    const sortedData = processedData.sort((a, b) => {
+      // First, compare by division
+      const divIndexA = a.division ? divisionOrder.indexOf(a.division) : -1
+      const divIndexB = b.division ? divisionOrder.indexOf(b.division) : -1
+
+      // If division not found in order array, put it at the end
+      const divPosA = divIndexA === -1 ? divisionOrder.length : divIndexA
+      const divPosB = divIndexB === -1 ? divisionOrder.length : divIndexB
+
+      // If divisions are different, sort by division
+      if (divPosA !== divPosB) {
+        return divPosA - divPosB
+      }
+
+      // If divisions are the same, sort by pangkat
+      const pangkatIndexA = pangkatOrder.indexOf(a.pangkat)
+      const pangkatIndexB = pangkatOrder.indexOf(b.pangkat)
+
+      // If pangkat not found in order array, put it at the end
+      const pangkatPosA = pangkatIndexA === -1 ? pangkatOrder.length : pangkatIndexA
+      const pangkatPosB = pangkatIndexB === -1 ? pangkatOrder.length : pangkatIndexB
+
+      return pangkatPosA - pangkatPosB
+    })
+
     res.status(200).json({
       success: true,
-      data: processedData,
+      data: sortedData,
       pagination: {
         totalUser,
         totalPages,
@@ -98,10 +127,10 @@ export async function getUserById(req: Request, res: Response, next: NextFunctio
 
 export async function createUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const { name, email, nrp, jabatan, password, role, status, pangkat } = req.body;
+    const { name, email, nrp, jabatan, password, role, status, pangkat, division } = req.body;
     const image = req.file
     // **Validation Required Fields**
-    if (!name || !email || !nrp || !jabatan || !password || !role || !status || !pangkat) {
+    if (!name || !email || !nrp || !jabatan || !password || !role || !status || !pangkat || !division) {
       return res.status(400).json({
         success: false,
         message: "Semua field wajib diisi.",
@@ -141,6 +170,7 @@ export async function createUser(req: Request, res: Response, next: NextFunction
       status: status,
       role: role,
       pangkat: pangkat,
+      division: division,
     }
 
     // **Create User**
@@ -224,7 +254,7 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 export async function updateUser(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params
-    const { name, email, nrp, jabatan, password, role, status, pangkat, userId } = req.body
+    const { name, email, nrp, jabatan, password, role, status, pangkat, userId, division } = req.body
 
     if (!id) throw new CustomError("Parameter id tidak lengkap", 400);
 
@@ -250,6 +280,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
       pangkat: pangkat ?? existingUser.pangkat,
       role: role ?? existingUser.role,
       userId: userId ?? existingUser.id,
+      division: division ?? existingUser.division,
       image: imageUrl ?? "",
     })
     res.status(200).json({

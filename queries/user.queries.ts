@@ -1,4 +1,4 @@
-import { Role, UserStatus } from "@prisma/client"
+import { DivisionType, Role, UserStatus } from "@prisma/client"
 import { prisma } from "../config/prisma"
 
 class User {
@@ -134,6 +134,7 @@ class User {
     status: UserStatus
     role: Role
     pangkat: string
+    division: DivisionType
   }) {
     return prisma.users.create({
       data
@@ -151,6 +152,7 @@ class User {
     role?: Role
     pangkat?: string
     userId?: string
+    division?: DivisionType
   }) {
     const updateData: any = {}
 
@@ -163,6 +165,7 @@ class User {
     if (data.status !== undefined) updateData.status = data.status
     if (data.role !== undefined) updateData.role = data.role
     if (data.pangkat !== undefined) updateData.pangkat = data.pangkat
+    if (data.division !== undefined) updateData.division = data.division
 
     return prisma.users.update({
       where: {

@@ -45,17 +45,7 @@ class Attendance {
     })
   }
 
-  checkoutAttendance(id: string, data: { timeOut: Date, status?: AttendanceStatus, absentReason?: AttendanceAbsentReason, note?: string }) {
-    return prisma.attendance.update({
-      where: { id },
-      data: {
-        time_out: data.timeOut,
-        ...(data.status ? { status: data.status } : {}),
-        ...(data.absentReason ? { AbsentReason: data.absentReason } : {}),
-        ...(data.note !== undefined ? { note: data.note ?? null } : {})
-      }
-    })
-  }
+
 
   getAttendanceByPersonel(
     date?: Date,
@@ -63,7 +53,8 @@ class Attendance {
     page: number = 1,
     limit: number = 10,
     status?: AttendanceStatus,
-    absentReason?: AttendanceAbsentReason
+    absentReason?: AttendanceAbsentReason,
+    division?: string
   ) {
     const where: any = {
       user: {
@@ -87,6 +78,13 @@ class Attendance {
           mode: "insensitive",
         },
       };
+    }
+
+    if (division) {
+      where.user = {
+        ...where.user,
+        division: division
+      }
     }
 
     if (date) {

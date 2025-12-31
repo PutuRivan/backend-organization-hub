@@ -16,7 +16,7 @@ export async function getAllAttendance(req: Request, res: Response, next: NextFu
 export async function getTodayAttendance(req: Request, res: Response, next: NextFunction) {
   try {
     const authenticatedUserId = req.params?.userId
-    
+
     if (!authenticatedUserId) {
       throw new CustomError("User tidak ditemukan pada token", 401)
     }
@@ -97,49 +97,28 @@ export async function createAttendance(req: Request, res: Response, next: NextFu
       dayEnd
     )
 
-    // === ABSENSI MASUK ===
-    if (!existingAttendance) {
-      const createData: any = {
-        userId: targetUserId,
-        date: now,
-        timeIn: now,
-        status: normalizedStatus ?? AttendanceStatus.Hadir,
-      }
-
-      if (normalizedAbsentReason) createData.absentReason = normalizedAbsentReason
-      if (note) createData.note = note
-
-      const createdAttendance = await Attendance.createAttendance(createData)
-
-      return res.status(201).json({
-        success: true,
-        message: "Berhasil melakukan absensi masuk",
-        data: createdAttendance,
-      })
+    // Check if attendance already exists for today
+    if (existingAttendance) {
+      throw new CustomError("Anda sudah melakukan absensi hari ini", 400)
     }
 
-    // === ABSENSI PULANG ===
-    if (existingAttendance.time_out) {
-      throw new CustomError("Anda sudah menyelesaikan absensi hari ini", 400)
+    // Create new attendance
+    const createData: any = {
+      userId: targetUserId,
+      date: now,
+      timeIn: now,
+      status: normalizedStatus ?? AttendanceStatus.Hadir,
     }
 
-    const updateData: any = {
-      timeOut: now,
-      status: normalizedStatus ?? existingAttendance.status,
-    }
+    if (normalizedAbsentReason) createData.absentReason = normalizedAbsentReason
+    if (note) createData.note = note
 
-    if (normalizedAbsentReason) updateData.absentReason = normalizedAbsentReason
-    if (note) updateData.note = note
+    const createdAttendance = await Attendance.createAttendance(createData)
 
-    const updatedAttendance = await Attendance.checkoutAttendance(
-      existingAttendance.id,
-      updateData
-    )
-
-    res.status(200).json({
+    return res.status(201).json({
       success: true,
-      message: "Berhasil melakukan absensi pulang",
-      data: updatedAttendance,
+      message: "Berhasil melakukan absensi",
+      data: createdAttendance,
     })
   } catch (error) {
     next(error)
@@ -152,7 +131,7 @@ export async function getPersonelAttendance(
   next: NextFunction
 ) {
   try {
-    const { status, date, name, page = 1, limit = 5 } = req.query;
+    const { status, date, name, page = 1, limit = 5, division } = req.query;
 
     let parsedDate: Date | undefined;
 
@@ -179,6 +158,8 @@ export async function getPersonelAttendance(
 
     let filterStatus: AttendanceStatus | undefined;
     let filterAbsentReason: AttendanceAbsentReason | undefined;
+    let filterDivision: string | undefined;
+    let filterName: string | undefined;
 
     if (status) {
       const statusString = status as string;
@@ -200,13 +181,22 @@ export async function getPersonelAttendance(
       }
     }
 
+    if (division) {
+      filterDivision = division as string;
+    }
+
+    if (name) {
+      filterName = name as string;
+    }
+
     const { data, totalData } = await Attendance.getAttendanceByPersonel(
-      parsedDate, // ✅ FIXED
-      name as string | undefined,
+      parsedDate,
+      filterName,
       pageNumber,
       limitNumber,
       filterStatus,
-      filterAbsentReason
+      filterAbsentReason,
+      filterDivision
     );
 
     res.status(200).json({
